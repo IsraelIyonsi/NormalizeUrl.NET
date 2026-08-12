@@ -1,0 +1,52 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <RootNamespace>NormalizeUrl</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>NormalizeUrl.Net</PackageId>
+    <Version>0.1.0</Version>
+    <Title>NormalizeUrl.NET</Title>
+    <Authors>Israel Iyonsi</Authors>
+    <Copyright>Copyright (c) 2026 Israel Iyonsi</Copyright>
+    <Description>URL normalization for .NET. Canonicalize URLs for equality checks, deduplication and cache keys with configurable, safe-by-default transforms. Zero external dependencies.</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/IsraelIyonsi/NormalizeUrl.NET</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/IsraelIyonsi/NormalizeUrl.NET</PackageProjectUrl>
+    <PackageTags>url;normalize;canonicalize;dedup;cache-key;uri;rfc3986</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageReleaseNotes>See https://github.com/IsraelIyonsi/NormalizeUrl.NET/blob/main/CHANGELOG.md</PackageReleaseNotes>
+    <RepositoryType>git</RepositoryType>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="NormalizeUrl.Net.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+</Project>
