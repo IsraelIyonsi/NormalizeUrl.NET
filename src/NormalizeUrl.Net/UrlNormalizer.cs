@@ -77,9 +77,14 @@ public static class UrlNormalizer
 
         var hasQuery = parsed.HasQuery;
         var query = PercentEncodingNormalizer.Normalize(parsed.Query);
-        if (hasQuery && effectiveOptions.QueryParametersToRemove.Count > 0)
+        var removesQueryParameters =
+            effectiveOptions.QueryParametersToRemove.Count > 0 || effectiveOptions.QueryParameterMatcher is not null;
+        if (hasQuery && removesQueryParameters)
         {
-            query = QueryStringNormalizer.RemoveParameters(query, effectiveOptions.QueryParametersToRemove);
+            query = QueryStringNormalizer.RemoveParameters(
+                query,
+                effectiveOptions.QueryParametersToRemove,
+                effectiveOptions.QueryParameterMatcher);
         }
 
         if (hasQuery && effectiveOptions.SortQueryParameters)

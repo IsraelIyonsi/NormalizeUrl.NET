@@ -61,6 +61,24 @@ bool same = UrlNormalizer.AreEquivalent(
 // true
 ```
 
+### Strip open-ended tracking parameters by pattern
+
+Real tracking keys are open-ended (`utm_source`, `utm_medium`, `fbclid`, `gclid`, `mc_eid`, ...), so a fixed name list cannot cover them. `QueryParameterMatcher` takes a predicate over the parameter name; return `true` to drop it. It is unioned with `QueryParametersToRemove`, and the name is passed verbatim, so the match is case-sensitive unless your predicate folds case.
+
+```csharp
+using NormalizeUrl;
+
+var options = new NormalizeUrlOptions
+{
+    QueryParameterMatcher = name => name.StartsWith("utm_", StringComparison.Ordinal),
+};
+
+string canonical = UrlNormalizer.Normalize(
+    "https://shop.example.com/item?utm_source=news&utm_medium=email&id=42",
+    options);
+// "https://shop.example.com/item?id=42"
+```
+
 ### Build a stable cache key from a request URL
 
 ```csharp
@@ -92,6 +110,7 @@ These can change what two URLs mean relative to each other, so you turn them on 
 | `SortQueryParameters` | Reorders query parameters by key, then value. Off because parameter order occasionally matters to a server. |
 | `StripTrailingSlash` | Removes one trailing `/` from the path, unless the path is just `/`. Off because `/a/` and `/a` are not guaranteed to be the same resource. |
 | `QueryParametersToRemove` | Strips named query parameters entirely. Off (empty) by default; pass `NormalizeUrlOptions.UtmTrackingParameters` for the common `utm_*` family. |
+| `QueryParameterMatcher` | An opt-in predicate that strips query parameters by matching their name, unioned with `QueryParametersToRemove`. Off (`null`) by default. Use it for open-ended tracking families a fixed list cannot enumerate (`utm_*`, `fbclid`, `gclid`, ...). |
 | `ForceHttps` | Rewrites `http` to `https`. Off because it changes which endpoint the URL addresses. |
 | `StripFragment` | Removes the fragment entirely, regardless of content. Off because single-page apps route on the fragment. |
 | `StripWwwPrefix` | Removes one leading `www.` label from the host. Off because `www.example.com` and `example.com` are not guaranteed to be the same host. |

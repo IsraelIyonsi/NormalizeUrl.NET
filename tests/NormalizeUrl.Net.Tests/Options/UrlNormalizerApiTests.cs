@@ -87,6 +87,7 @@ public sealed class UrlNormalizerApiTests
         Assert.False(options.ForceHttps);
         Assert.False(options.StripWwwPrefix);
         Assert.Empty(options.QueryParametersToRemove);
+        Assert.Null(options.QueryParameterMatcher);
     }
 
     [Fact]
@@ -95,6 +96,93 @@ public sealed class UrlNormalizerApiTests
         Assert.Equal(
             new[] { "utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content" },
             NormalizeUrlOptions.UtmTrackingParameters);
+    }
+
+    [Fact]
+    public void Normalize_WithQueryParameterMatcher_StripsMatchingParametersOnly()
+    {
+        var options = new NormalizeUrlOptions
+        {
+            QueryParameterMatcher = name => name.StartsWith("utm_", StringComparison.Ordinal),
+        };
+
+        var actual = UrlNormalizer.Normalize(
+            "http://example.com/path?utm_source=news&utm_medium=email&utm_campaign=spring&id=42",
+            options);
+
+        Assert.Equal("http://example.com/path?id=42", actual);
+    }
+
+    [Fact]
+    public void Normalize_WithMatcherAndExactNames_AppliesTheUnion()
+    {
+        var options = new NormalizeUrlOptions
+        {
+            QueryParametersToRemove = ["fbclid"],
+            QueryParameterMatcher = name => name.StartsWith("utm_", StringComparison.Ordinal),
+        };
+
+        var actual = UrlNormalizer.Normalize(
+            "http://example.com/path?fbclid=abc&utm_source=news&keep=1",
+            options);
+
+        Assert.Equal("http://example.com/path?keep=1", actual);
+    }
+
+    [Fact]
+    public void Normalize_WithNullMatcher_MatchesDefaultProfile()
+    {
+        const string url = "http://example.com/path?utm_source=news&id=42";
+
+        var withNullMatcher = UrlNormalizer.Normalize(url, new NormalizeUrlOptions { QueryParameterMatcher = null });
+        var withDefault = UrlNormalizer.Normalize(url);
+
+        Assert.Equal(withDefault, withNullMatcher);
+        Assert.Equal("http://example.com/path?utm_source=news&id=42", withNullMatcher);
+    }
+
+    [Fact]
+    public void Normalize_WithMatcherThatRemovesNothing_LeavesQueryUnchanged()
+    {
+        var options = new NormalizeUrlOptions { QueryParameterMatcher = _ => false };
+
+        var actual = UrlNormalizer.Normalize("http://example.com/path?a=1&b=2", options);
+
+        Assert.Equal("http://example.com/path?a=1&b=2", actual);
+    }
+
+    [Fact]
+    public void Normalize_WithMatcherAndSort_IsDeterministic()
+    {
+        var options = new NormalizeUrlOptions
+        {
+            SortQueryParameters = true,
+            QueryParameterMatcher = name => name.StartsWith("utm_", StringComparison.Ordinal),
+        };
+
+        var actual = UrlNormalizer.Normalize(
+            "http://example.com/path?b=2&utm_source=news&a=1",
+            options);
+
+        Assert.Equal("http://example.com/path?a=1&b=2", actual);
+    }
+
+    [Fact]
+    public void Normalize_MatcherCaseSensitivity_MatchesExactNameRemoval()
+    {
+        var matcherOptions = new NormalizeUrlOptions
+        {
+            QueryParameterMatcher = name => name.Equals("utm_source", StringComparison.Ordinal),
+        };
+        var exactOptions = new NormalizeUrlOptions { QueryParametersToRemove = ["utm_source"] };
+
+        const string url = "http://example.com/path?UTM_SOURCE=x&utm_source=y&b=2";
+
+        var viaMatcher = UrlNormalizer.Normalize(url, matcherOptions);
+        var viaExact = UrlNormalizer.Normalize(url, exactOptions);
+
+        Assert.Equal("http://example.com/path?UTM_SOURCE=x&b=2", viaMatcher);
+        Assert.Equal(viaExact, viaMatcher);
     }
 
     [Fact]

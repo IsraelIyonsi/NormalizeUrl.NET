@@ -68,4 +68,18 @@ public sealed class NormalizeUrlOptions
     /// strip the common UTM tracking family.
     /// </summary>
     public IReadOnlyCollection<string> QueryParametersToRemove { get; init; } = [];
+
+    /// <summary>
+    /// An opt-in predicate that removes query parameters by matching their name, complementing the
+    /// fixed <see cref="QueryParametersToRemove"/> list. The input is the parameter name (never its
+    /// value); returning <see langword="true"/> removes the parameter. A parameter is dropped when
+    /// it appears in <see cref="QueryParametersToRemove"/> <em>or</em> this predicate returns
+    /// <see langword="true"/> for its name, so the two rules act as a union. <see langword="null"/>
+    /// by default, which leaves query filtering to <see cref="QueryParametersToRemove"/> alone.
+    /// The name is passed verbatim, exactly as it appears in the URL, so like
+    /// <see cref="QueryParametersToRemove"/> the match is case-sensitive unless the predicate itself
+    /// folds case. Useful for open-ended tracking families that a fixed list cannot enumerate, for
+    /// example <c>name =&gt; name.StartsWith("utm_", StringComparison.Ordinal)</c>.
+    /// </summary>
+    public Func<string, bool>? QueryParameterMatcher { get; init; }
 }

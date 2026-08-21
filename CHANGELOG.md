@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2026-08-21
+
+### Added
+
+- `NormalizeUrlOptions.QueryParameterMatcher`: an opt-in `Func<string, bool>?` predicate that removes query parameters by matching their name, complementing the fixed `QueryParametersToRemove` list. A parameter is dropped when it appears in `QueryParametersToRemove` or the predicate returns `true` for its name, so the two rules act as a union. The name is passed verbatim, so like `QueryParametersToRemove` the match is case-sensitive unless the predicate folds case. Suited to open-ended tracking families a fixed list cannot enumerate, for example `name => name.StartsWith("utm_", StringComparison.Ordinal)`.
+
 ## [0.1.0] - 2026-08-12
 
 ### Added

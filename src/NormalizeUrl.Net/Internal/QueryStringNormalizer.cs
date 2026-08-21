@@ -9,16 +9,25 @@ namespace NormalizeUrl.Internal;
 /// </summary>
 internal static class QueryStringNormalizer
 {
-    internal static string RemoveParameters(string query, IReadOnlyCollection<string> namesToRemove)
+    internal static string RemoveParameters(
+        string query,
+        IReadOnlyCollection<string> namesToRemove,
+        Func<string, bool>? nameMatcher)
     {
-        if (query.Length == 0 || namesToRemove.Count == 0)
+        if (query.Length == 0 || (namesToRemove.Count == 0 && nameMatcher is null))
         {
             return query;
         }
 
-        var kept = SplitPairs(query).Where(pair => !namesToRemove.Contains(pair.Key, StringComparer.Ordinal));
+        var kept = SplitPairs(query).Where(pair => !ShouldRemove(pair.Key, namesToRemove, nameMatcher));
         return Join(kept);
     }
+
+    private static bool ShouldRemove(
+        string name,
+        IReadOnlyCollection<string> namesToRemove,
+        Func<string, bool>? nameMatcher) =>
+        namesToRemove.Contains(name, StringComparer.Ordinal) || (nameMatcher is not null && nameMatcher(name));
 
     internal static string Sort(string query)
     {
